@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CC_Firmware_Update", "CC_Firmware_Update.csproj", "{C348EC5D-81EB-4B2D-98E6-93B278CBDA0B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C348EC5D-81EB-4B2D-98E6-93B278CBDA0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C348EC5D-81EB-4B2D-98E6-93B278CBDA0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C348EC5D-81EB-4B2D-98E6-93B278CBDA0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C348EC5D-81EB-4B2D-98E6-93B278CBDA0B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C28C40BA-99EF-4AF1-BEAA-2FDB1012638B}
+	EndGlobalSection
+EndGlobal

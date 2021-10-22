@@ -1,0 +1,10 @@
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\bin\Debug\CC_Firmware_Update.exe.config
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\bin\Debug\CC_Firmware_Update.exe
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\bin\Debug\CC_Firmware_Update.pdb
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.csproj.AssemblyReference.cache
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.Main.resources
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.Properties.Resources.resources
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.csproj.GenerateResource.cache
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.csproj.CoreCompileInputs.cache
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.exe
+C:\Users\sahanburak\Desktop\Projects\C_Sharp\CC_Firmware_Update\obj\Debug\CC_Firmware_Update.pdb
