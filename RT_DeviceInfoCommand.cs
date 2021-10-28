@@ -99,7 +99,8 @@ namespace CC_Firmware_Update
             byte[] cmd = deviceInfoCommand.getAdvanceDeviceInfoReadCommand();
             Program.SendData(cmd);
             byte[] rData = Program.ReceiveData();
-
+            if(rData == null)
+                return devStat;
             RT_Response response = new RT_Response();
             Boolean ret = response.ResponseParser(rData);
             if (ret)

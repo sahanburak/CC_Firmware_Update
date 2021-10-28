@@ -27,14 +27,14 @@ namespace CC_Firmware_Update
 
         public Boolean ResponseParser(byte[] responseArray) {
             RT_Response response = new RT_Response();
-
+            byte[] resp = responseArray;
             response.Header = RT_Command_Header.HeaderTypeCasting(Utils.ByteSlicer(responseArray, 0, 8));
             Boolean ret = false;
             Boolean err = false;
             if ((response.Header.Command & 0x8000) == 0x8000) {
                 err = true;
-                UInt32 Error = BitConverter.ToUInt32(responseArray, 8);
-                Console.WriteLine("Error Received:  {0:} Error Code: :  {0:}", (response.Header.Command & 0x00FF), Error);
+                UInt32 Error = BitConverter.ToUInt32(resp, 8);
+                Console.WriteLine("Error Received:  CMD: {0:} Error Code: :  {1:}", (response.Header.Command & 0x00FF), Error);
             }
             if (!err) { 
                 switch (response.Header.Command)

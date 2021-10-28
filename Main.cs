@@ -40,9 +40,9 @@ namespace CC_Firmware_Update
             generalPurposeProgressBar.Minimum = 0;
             generalPurposeProgressBar.Maximum = 100;
             generalPurposeProgressBar.Step = 1;
-            totalStausProgressBar.Minimum = 0;
-            totalStausProgressBar.Maximum = 100;
-            totalStausProgressBar.Step = 1;
+            totalStatusProgressBar.Minimum = 0;
+            totalStatusProgressBar.Maximum = 100;
+            totalStatusProgressBar.Step = 1;
         }
 
         private void Main_Load(object sender, EventArgs e)
@@ -107,7 +107,7 @@ namespace CC_Firmware_Update
 
         private void startFirmwareUpdateButton_Click(object sender, EventArgs e)
         {
-            totalStausProgressBar.Value = 0;
+            totalStatusProgressBar.Value = 0;
             using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Non Crypted Firmware|*.bin| Crypted Firmware |*.enc.bin" })
             {
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -118,26 +118,37 @@ namespace CC_Firmware_Update
                     return;
                 }
             }
-            totalStausProgressBar.Value += 5;
+            totalStatusProgressBar.Value += 5;
             devIPAddress = ipAddressTextBox.Text;
-            connectAction(devIPAddress, CMD_PORT);
+            if (!connectAction(devIPAddress, CMD_PORT))
+            {
+                MessageBox.Show("Connection failure !!!");
+                return;
+            }
 
             DeviceStatus stat = RT_DeviceInfoCommand.readDeviceInfo();
             Boolean ret = false;
             if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_FW_UPDATE && stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_CALIBRATION)
             {
-                if (stat.SwLevel == (UInt16)RT_Commands.eSwLevel.SWLEVEL_APPLICATION) {
-                    RT_RunModeChangeCommand runModeChangeCommand = new RT_RunModeChangeCommand();
-                    ret = runModeChangeCommand.changeDeviceRunMode((UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU,(UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
-                }
-                else if (stat.SwLevel == (UInt16)RT_Commands.eSwLevel.SWLEVEL_BOOTLOADER)
+
+                if (stat.SwLevel != (UInt16)RT_Commands.eSwLevel.SWLEVEL_NONE)
                 {
-                    totalStausProgressBar.Value += 5;
-                    MessageBox.Show("Device is in Bootloader mode. Let's begin to update.");
+                    if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_INIT)
+                    {
+                        RT_RunModeChangeCommand runModeChangeCommand = new RT_RunModeChangeCommand();
+                        ret = runModeChangeCommand.changeDeviceRunMode((UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU, (UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
+                        totalStatusProgressBar.Value = 5;
+                    }
+                    else 
+                    {
+                        ret = (stat.SwLevel == (UInt16)RT_Commands.eSwLevel.SWLEVEL_BOOTLOADER) ? true : false;
+                    }
+                    
                 }
                 else
                 {
                     MessageBox.Show("Device is in unknown mode.");
+
                 }
             }
             else {
@@ -155,10 +166,18 @@ namespace CC_Firmware_Update
                     }
                 }
                 else {
+                    if (Program.isConnected)
+                    {
+                        disconnectAction();
+                    }
                     MessageBox.Show("Update not started.");
                 }
             }
             else {
+                if (Program.isConnected)
+                {
+                    disconnectAction();
+                }
                 MessageBox.Show("Update mode not switchable.");
             }
         }
@@ -173,7 +192,7 @@ namespace CC_Firmware_Update
             ConnectionUIAction(Program.isConnected);
         }
 
-        public void connectAction(String ipAddr, int port) {
+        public bool connectAction(String ipAddr, int port) {
             String statusMsg = Program.CheckAccess(ipAddr);
             if (statusMsg.Equals("Success"))
             {
@@ -190,7 +209,9 @@ namespace CC_Firmware_Update
                 if (!Program.isConnected)
                     MessageBox.Show(statusMsg);
                 statusTextLabel.Text = statusMsg;
+                return status;
             }
+            return false;
         }
 
 
@@ -234,7 +255,7 @@ namespace CC_Firmware_Update
         {
             statusTextLabel.Text = "Waiting device for boot...";
             generalPurposeProgressBar.Value = e.ProgressPercentage;
-            totalStausProgressBar.Value = 10 + (e.ProgressPercentage / 5);
+            totalStatusProgressBar.Value = 10 + (e.ProgressPercentage / 5);
         }
 
        
@@ -243,7 +264,7 @@ namespace CC_Firmware_Update
             if (e.Cancelled == true)
             {
                 statusTextLabel.Text = "Device in boot mode.";
-                totalStausProgressBar.Value = 30;
+                totalStatusProgressBar.Value = 30;
                 generalPurposeProgressBar.Value = generalPurposeProgressBar.Maximum;
                 ConnectionUIAction(Program.isConnected);
                 FileInfo fileInfo = new FileInfo(fileName);
@@ -263,13 +284,13 @@ namespace CC_Firmware_Update
             else if (e.Error != null)
             {
                 statusTextLabel.Text = "Hata: " + e.Error.Message;
-                totalStausProgressBar.Value = 0 ;
+                totalStatusProgressBar.Value = 0 ;
             }
             else
             {
                 statusTextLabel.Text = statusMsg;
                 ConnectionUIAction(Program.isConnected);
-                totalStausProgressBar.Value = 0;
+                totalStatusProgressBar.Value = 0;
             }
         }
 
@@ -332,7 +353,7 @@ namespace CC_Firmware_Update
         {
             statusTextLabel.Text = "Firmware sending.";
             generalPurposeProgressBar.Value = e.ProgressPercentage;
-            totalStausProgressBar.Value = 30+(e.ProgressPercentage / 2);
+            totalStatusProgressBar.Value = 30+(e.ProgressPercentage / 2);
         }
 
         private void FirmwareUpdateBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -340,17 +361,17 @@ namespace CC_Firmware_Update
             if (e.Cancelled == true)
             {
                 statusTextLabel.Text = statusMsg;
-                totalStausProgressBar.Value = 0;
+                totalStatusProgressBar.Value = 0;
             }
             else if (e.Error != null)
             {
                 statusTextLabel.Text = "Hata: " + e.Error.Message;
-                totalStausProgressBar.Value = 0 ;
+                totalStatusProgressBar.Value = 0 ;
             }
             else
             {
                 statusTextLabel.Text = statusMsg;
-                totalStausProgressBar.Value = 80;
+                totalStatusProgressBar.Value = 80;
                 waitDeviceAPPBackgroundWorker.RunWorkerAsync(devIPAddress);
             }
             Program.Disconnect();
@@ -394,17 +415,17 @@ namespace CC_Firmware_Update
         {
             statusTextLabel.Text = "Waiting device for firmware write operation...";
             generalPurposeProgressBar.Value = e.ProgressPercentage;
-            totalStausProgressBar.Value = 80 + (e.ProgressPercentage / 5);
+            totalStatusProgressBar.Value = 80 + (e.ProgressPercentage / 5);
         }
 
         private void waitDeviceAPPBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Cancelled == true)
             {
-                statusTextLabel.Text = "Device is updated.";
-                totalStausProgressBar.Value = 100;
-                generalPurposeProgressBar.Value = generalPurposeProgressBar.Maximum;
                 disconnectAction();
+                statusTextLabel.Text = "Device updated.";
+                totalStatusProgressBar.Value = 100;
+                generalPurposeProgressBar.Value = generalPurposeProgressBar.Maximum;
             }
             else if (e.Error != null)
             {

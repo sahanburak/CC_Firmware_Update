@@ -41,7 +41,7 @@ namespace CC_Firmware_Update
             this.waitDeviceBootBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.FirmwareUpdateBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.waitDeviceAPPBackgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.totalStausProgressBar = new System.Windows.Forms.ProgressBar();
+            this.totalStatusProgressBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // ipAddressTextBox
@@ -140,14 +140,14 @@ namespace CC_Firmware_Update
             // 
             // totalStausProgressBar
             // 
-            this.totalStausProgressBar.BackColor = System.Drawing.SystemColors.Control;
-            this.totalStausProgressBar.Location = new System.Drawing.Point(11, 141);
-            this.totalStausProgressBar.MarqueeAnimationSpeed = 1;
-            this.totalStausProgressBar.Maximum = 10;
-            this.totalStausProgressBar.Name = "totalStausProgressBar";
-            this.totalStausProgressBar.Size = new System.Drawing.Size(684, 23);
-            this.totalStausProgressBar.Step = 1;
-            this.totalStausProgressBar.TabIndex = 12;
+            this.totalStatusProgressBar.BackColor = System.Drawing.SystemColors.Control;
+            this.totalStatusProgressBar.Location = new System.Drawing.Point(11, 141);
+            this.totalStatusProgressBar.MarqueeAnimationSpeed = 1;
+            this.totalStatusProgressBar.Maximum = 10;
+            this.totalStatusProgressBar.Name = "totalStausProgressBar";
+            this.totalStatusProgressBar.Size = new System.Drawing.Size(684, 23);
+            this.totalStatusProgressBar.Step = 1;
+            this.totalStatusProgressBar.TabIndex = 12;
             // 
             // Main
             // 
@@ -155,7 +155,7 @@ namespace CC_Firmware_Update
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
             this.ClientSize = new System.Drawing.Size(713, 170);
-            this.Controls.Add(this.totalStausProgressBar);
+            this.Controls.Add(this.totalStatusProgressBar);
             this.Controls.Add(this.startFirmwareUpdateButton);
             this.Controls.Add(this.getDeviceInfoButton);
             this.Controls.Add(this.generalPurposeProgressBar);
@@ -188,7 +188,7 @@ namespace CC_Firmware_Update
         private System.ComponentModel.BackgroundWorker waitDeviceBootBackgroundWorker;
         private System.ComponentModel.BackgroundWorker FirmwareUpdateBackgroundWorker;
         private System.ComponentModel.BackgroundWorker waitDeviceAPPBackgroundWorker;
-        private System.Windows.Forms.ProgressBar totalStausProgressBar;
+        private System.Windows.Forms.ProgressBar totalStatusProgressBar;
     }
 }
 

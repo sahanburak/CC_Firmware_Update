@@ -136,7 +136,7 @@ namespace CC_Firmware_Update
             operationCmd.OperType = operType;// (UInt16)eOperationType.OPT_DOWNLOAD;
             operationCmd.HWUnit = hwUnit;//(UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
             
-            operationCmd.Header.MessgeLength = (UInt32) Size;
+            operationCmd.Header.MessgeLength = (UInt32) (Size-operationCmd.Header.Size);
 
 
             byte[] cmd = operationCmd.commandToByteArray(operationCmd);
@@ -170,6 +170,12 @@ namespace CC_Firmware_Update
 
         public static Boolean ResponseParser(byte[] response)
         {
+            Console.Write("Operation Command Response: [");
+            for (int i = 0; i < response.Length; i++)
+            {
+                Console.Write(" 0x{0:X}", response[i]);
+            }
+            Console.WriteLine(" ]");
             RT_OperationCommand operationResponse = new RT_OperationCommand();
             Boolean ret = false;
             operationResponse.PacketSize = BitConverter.ToUInt16(response, 0);
