@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -26,15 +27,30 @@ namespace CC_Firmware_Update
         static int UPDATE_PORT = 1237;
         static int startIP = 205;
         static int endIP = 215;
+        UInt16 uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
+        UInt16 uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE;
+        System.Diagnostics.Process p;
+        int generalPurposeProgressBarVal = 0;
+        int totalStatusProgressBarVal = 0;
+        bool isProcessEnd = false;
         public Main()
         {
             InitializeComponent();
             waitDeviceBootBackgroundWorker.WorkerReportsProgress = true; 
             waitDeviceBootBackgroundWorker.WorkerSupportsCancellation = true;
+
             FirmwareUpdateBackgroundWorker.WorkerReportsProgress = true;
             FirmwareUpdateBackgroundWorker.WorkerSupportsCancellation = true;
+
             waitDeviceAPPBackgroundWorker.WorkerReportsProgress = true;
             waitDeviceAPPBackgroundWorker.WorkerSupportsCancellation = true;
+
+            changeProgressBarValueBackgroundWorker.WorkerReportsProgress = true;
+            changeProgressBarValueBackgroundWorker.WorkerSupportsCancellation = true;
+
+            CommandRunnerBackgroundWorker.WorkerReportsProgress = true;
+            CommandRunnerBackgroundWorker.WorkerSupportsCancellation = true;
+
             firmwareUpdateCommand = new RT_FirmwareUpdateCommand();
             firmwareUpdateStartCommand = new RT_FirmwareUpdateStartCommand();
             generalPurposeProgressBar.Minimum = 0;
@@ -44,6 +60,7 @@ namespace CC_Firmware_Update
             totalStatusProgressBar.Maximum = 100;
             totalStatusProgressBar.Step = 1;
         }
+
 
         private void Main_Load(object sender, EventArgs e)
         {
@@ -107,78 +124,26 @@ namespace CC_Firmware_Update
 
         private void startFirmwareUpdateButton_Click(object sender, EventArgs e)
         {
-            totalStatusProgressBar.Value = 0;
-            using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Non Crypted Firmware|*.bin| Crypted Firmware |*.enc.bin" })
-            {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    fileName = openFileDialog.FileName;
-                }
-                else {
-                    return;
-                }
-            }
-            totalStatusProgressBar.Value += 5;
-            devIPAddress = ipAddressTextBox.Text;
-            if (!connectAction(devIPAddress, CMD_PORT))
-            {
-                MessageBox.Show("Connection failure !!!");
-                return;
-            }
-
-            DeviceStatus stat = RT_DeviceInfoCommand.readDeviceInfo();
-            Boolean ret = false;
-            if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_FW_UPDATE && stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_CALIBRATION)
-            {
-
-                if (stat.SwLevel != (UInt16)RT_Commands.eSwLevel.SWLEVEL_NONE)
-                {
-                    if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_INIT)
+            switch (uHwUnit) {
+                case (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU:
+                    switch (uOperClass)
                     {
-                        RT_RunModeChangeCommand runModeChangeCommand = new RT_RunModeChangeCommand();
-                        ret = runModeChangeCommand.changeDeviceRunMode((UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU, (UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
-                        totalStatusProgressBar.Value = 5;
+                        case (UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE:
+                            HostMCU_FirmwareUpdate();
+                            break;
+                        case (UInt16)RT_OperationCommand.eOperationClass.OPC_BOOTLOADER:                        
+                            HostMCU_BootloaderUpdate();
+                            break;
                     }
-                    else 
-                    {
-                        ret = (stat.SwLevel == (UInt16)RT_Commands.eSwLevel.SWLEVEL_BOOTLOADER) ? true : false;
-                    }
+                    break;
+                case (UInt16)RT_Commands.eHWUnit.HW_UNIT_STM32:
                     
-                }
-                else
-                {
-                    MessageBox.Show("Device is in unknown mode.");
+                    break;
+                case (UInt16)RT_Commands.eHWUnit.HW_UNIT_NETX:
 
-                }
-            }
-            else {
-                MessageBox.Show("Device run mode is not recognized.");
-            }
-
-            if (ret) {
-                RT_OperationCommand operationCmd = new RT_OperationCommand();
-                ret = operationCmd.doOperationCommand((UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE, (UInt16)RT_OperationCommand.eOperationType.OPT_DOWNLOAD, (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU);
-                if (ret)
-                {
-                    if (Program.isConnected) {
-                        Program.Disconnect();
-                        waitDeviceBootBackgroundWorker.RunWorkerAsync(devBootLoaderIPaddress);
-                    }
-                }
-                else {
-                    if (Program.isConnected)
-                    {
-                        disconnectAction();
-                    }
-                    MessageBox.Show("Update not started.");
-                }
-            }
-            else {
-                if (Program.isConnected)
-                {
-                    disconnectAction();
-                }
-                MessageBox.Show("Update mode not switchable.");
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -190,6 +155,7 @@ namespace CC_Firmware_Update
             Program.Disconnect();
             statusTextLabel.Text = "Disconnected";
             ConnectionUIAction(Program.isConnected);
+            startFirmwareUpdateButton.Enabled = true;
         }
 
         public bool connectAction(String ipAddr, int port) {
@@ -269,10 +235,10 @@ namespace CC_Firmware_Update
                 ConnectionUIAction(Program.isConnected);
                 FileInfo fileInfo = new FileInfo(fileName);
                 long fsize = fileInfo.Length;
-                firmwareUpdateStartCommand.startFirmwareUpdate((byte)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU, (byte)RT_Commands.eFWType.DOWNLOAD_FW_WITH_RST, (UInt32)fsize);
+                firmwareUpdateStartCommand.startFirmwareUpdate((byte)uHwUnit, (byte)RT_Commands.eFWType.DOWNLOAD_FW_WITH_RST, (UInt32)fsize);
                 if (RT_FirmwareUpdateStartCommand.isUpdateStartable)
                 {
-                    firmwareFile = File.ReadAllBytes(fileName);// new StreamReader(fileName);
+                    firmwareFile = File.ReadAllBytes(fileName);
                     Console.WriteLine("Array Len: {0:} Fsize: {0:}", firmwareFile.Length, fsize);
                     FirmwareUpdateBackgroundWorker.RunWorkerAsync(fsize);
                 }
@@ -426,6 +392,7 @@ namespace CC_Firmware_Update
                 statusTextLabel.Text = "Device updated.";
                 totalStatusProgressBar.Value = 100;
                 generalPurposeProgressBar.Value = generalPurposeProgressBar.Maximum;
+                startFirmwareUpdateButton.Enabled = true;
             }
             else if (e.Error != null)
             {
@@ -435,7 +402,437 @@ namespace CC_Firmware_Update
             {
                 statusTextLabel.Text = statusMsg;
                 disconnectAction();
+                startFirmwareUpdateButton.Enabled = true;
             }
         }
+
+
+        private void changeProgressBarValueBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            while (totalStatusProgressBar.Value != totalStatusProgressBar.Maximum) {
+
+                if (worker.CancellationPending == true)
+                {
+                    e.Cancel = true;
+                    break;
+                }
+                else
+                {
+                    int value = totalStatusProgressBarVal * 1000 + generalPurposeProgressBarVal;
+                    worker.ReportProgress(value);
+                    System.Threading.Thread.Sleep(500);
+                }
+            }
+        }
+
+        private void changeProgressBarValueBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            statusTextLabel.Text = "Waiting bootloader update...";
+            generalPurposeProgressBar.Value = (e.ProgressPercentage % 1000);
+            totalStatusProgressBar.Value = (e.ProgressPercentage / 1000);
+            Console.WriteLine("sub task: "+ generalPurposeProgressBar.Value+"/100 main task: "+ totalStatusProgressBar.Value+"/100");
+        }
+
+        private void changeProgressBarValueBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled == true)
+            {
+                statusTextLabel.Text = "Bootloader update process error.";
+                generalPurposeProgressBar.Value = generalPurposeProgressBar.Minimum;
+                totalStatusProgressBar.Value = totalStatusProgressBar.Minimum;
+            }
+            else if (e.Error != null)
+            {
+                statusTextLabel.Text = "Hata: " + e.Error.Message;
+            }
+            else
+            {
+                statusTextLabel.Text = "Bootloader updated.";
+                generalPurposeProgressBar.Value = generalPurposeProgressBar.Maximum;
+                totalStatusProgressBar.Value = totalStatusProgressBar.Maximum;
+            }
+            startFirmwareUpdateButton.Enabled = true;
+        }
+
+
+        private void CommandRunnerBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            generalPurposeProgressBarVal = 0;
+            BackgroundWorker worker = sender as BackgroundWorker;
+            p = new System.Diagnostics.Process();
+            try
+            {
+                {
+                    generalPurposeProgressBarVal += 5;
+                    totalStatusProgressBarVal += 5;
+                    worker.ReportProgress(25);
+                    // set start info
+                    p.StartInfo = new ProcessStartInfo(@"C:\Program Files (x86)\Atmel\Studio\7.0\atbackend\atprogram.exe")
+                    {
+                        RedirectStandardInput = true,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        Arguments = e.Argument.ToString()
+                };
+
+                    Console.WriteLine("Command running: "+e.Argument.ToString());
+                    // start process
+                    p.Start();
+                    worker.ReportProgress(50);                    
+                    totalStatusProgressBarVal += 25;
+                    p.OutputDataReceived += (p_OutputDataReceived);
+                    p.ErrorDataReceived += p_ErrorDataReceived;
+                    p.BeginOutputReadLine();
+                    p.BeginErrorReadLine();
+                    //wait
+                    p.WaitForExit();
+                    p.Close();
+                    worker.ReportProgress(100);
+                    p = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        private void CommandRunnerBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            
+        }
+
+        private void CommandRunnerBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled == true)
+            {
+                Console.WriteLine("Bootloader updated with cancelled.");
+            }
+            else if (e.Error != null)
+            {
+                Console.WriteLine("Hata: " + e.Error.Message);
+            }
+            else
+            {
+                Console.WriteLine("Bootloader updated.");
+            }
+            if (!isProcessEnd)
+            {
+                generalPurposeProgressBarVal = 0;
+                CommandRunnerBackgroundWorker.RunWorkerAsync(@"-t atmelice -i swd -d ATSAME70Q21B program -f " + fileName + " --verify");
+                isProcessEnd = true;
+            }
+        }
+
+        private void hostMCURadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (hostMCURadioButton.Checked) {
+                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
+            }
+            else {
+                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NONE;
+            }
+        }
+
+        private void auxMCURadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (auxMCURadioButton.Checked)
+            {
+                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_STM32;
+            }
+            else
+            {
+                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NONE;
+            }
+        }
+
+        private void netxRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (netxRadioButton.Checked)
+            {
+                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NETX;
+            }
+            else
+            {
+                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NONE;
+            }
+        }
+
+        private void opc_FirmwareRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_FirmwareRadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        private void opc_BootloaderRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_BootloaderRadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_BOOTLOADER;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        private void opc_ConfigRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_ConfigRadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_CONFIG;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        private void opc_ConfigBLRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_ConfigBLRadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_CONFIG_BL;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        private void opc_CalibrationRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_CalibrationRadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_CALIBRATION;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        private void opc_Licence_RadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_Licence_RadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_LICENCE;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        private void opc_ModuleRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (opc_ModuleRadioButton.Checked)
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_MODULE;
+            }
+            else
+            {
+                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+            }
+        }
+
+        void HostMCU_FirmwareUpdate()
+        {
+            totalStatusProgressBar.Value = 0;
+            using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Non Crypted Firmware|*.bin| Crypted Firmware |*.enc.bin" })
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    fileName = openFileDialog.FileName;
+                    startFirmwareUpdateButton.Enabled = false;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            totalStatusProgressBar.Value += 5;
+            devIPAddress = ipAddressTextBox.Text;
+            if (!connectAction(devIPAddress, CMD_PORT))
+            {
+                MessageBox.Show("Connection failure !!!");
+                startFirmwareUpdateButton.Enabled = true;
+                return;
+            }
+
+            DeviceStatus stat = RT_DeviceInfoCommand.readDeviceInfo();
+            Boolean ret = false;
+            if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_FW_UPDATE && stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_CALIBRATION)
+            {
+
+                if (stat.SwLevel != (UInt16)RT_Commands.eSwLevel.SWLEVEL_NONE)
+                {
+                    if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_INIT)
+                    {
+                        RT_RunModeChangeCommand runModeChangeCommand = new RT_RunModeChangeCommand();
+                        ret = runModeChangeCommand.changeDeviceRunMode(uHwUnit, (UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
+                        totalStatusProgressBar.Value = 5;
+                    }
+                    else
+                    {
+                        ret = (stat.SwLevel == (UInt16)RT_Commands.eSwLevel.SWLEVEL_BOOTLOADER) ? true : false;
+                    }
+
+                }
+                else
+                {
+                    startFirmwareUpdateButton.Enabled = true;
+                    MessageBox.Show("Device is in unknown mode.");
+
+                }
+            }
+            else
+            {
+                startFirmwareUpdateButton.Enabled = true;
+                MessageBox.Show("Device run mode is not recognized.");
+            }
+
+            if (ret)
+            {
+                RT_OperationCommand operationCmd = new RT_OperationCommand();
+                ret = operationCmd.doOperationCommand(uOperClass, (UInt16)RT_OperationCommand.eOperationType.OPT_DOWNLOAD, uHwUnit);
+                if (ret)
+                {
+                    if (Program.isConnected)
+                    {
+                        Program.Disconnect();
+                        waitDeviceBootBackgroundWorker.RunWorkerAsync(devBootLoaderIPaddress);
+                    }
+                }
+                else
+                {
+                    if (Program.isConnected)
+                    {
+                        disconnectAction();
+                    }
+                    MessageBox.Show("Update not started.");
+                }
+            }
+            else
+            {
+                if (Program.isConnected)
+                {
+                    disconnectAction();
+                }
+                MessageBox.Show("Update mode not switchable.");
+            }
+        }
+
+        void HostMCU_BootloaderUpdate()
+        {
+            isProcessEnd = false;
+            totalStatusProgressBarVal = 0;
+            totalStatusProgressBar.Value = totalStatusProgressBarVal;
+            generalPurposeProgressBarVal = 0;
+            generalPurposeProgressBar.Value = generalPurposeProgressBarVal;
+            using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Firmware |*.elf" })
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    fileName = openFileDialog.FileName;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+
+            string[] lines = File.ReadAllLines(fileName);
+            bool result = false;
+            for (int i=0;i<lines.Length;i++) { 
+                result = lines[i].Contains("Bootloader starting...");
+                if (result)
+                    break;
+            }
+
+            if (result)
+            {
+                startFirmwareUpdateButton.Enabled = false;
+                changeProgressBarValueBackgroundWorker.RunWorkerAsync();
+                CommandRunnerBackgroundWorker.RunWorkerAsync(@"-t atmelice -i swd -d ATSAME70Q21B chiperase");
+            }
+            else {
+                MessageBox.Show("Please select bootloader firmware");
+            }
+
+        }
+
+
+        void p_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Process p = sender as Process;
+            if (p == null)
+                return;
+            if(e.Data != null)
+            {
+                if (e.Data.Equals("[ERROR] Could not find tool."))
+                {
+                    changeProgressBarValueBackgroundWorker.CancelAsync();
+                    CommandRunnerBackgroundWorker.CancelAsync();
+                    MessageBox.Show("Please check Atmel ICE connection");
+                }
+                else if (e.Data.Equals("[ERROR] Could not establish connection to device. Please check input parameters, hardware connections, security bit, target power, and clock values."))
+                {
+                    changeProgressBarValueBackgroundWorker.CancelAsync();
+                    CommandRunnerBackgroundWorker.CancelAsync();
+                    MessageBox.Show("Could not establish connection to device.");
+                }
+                else
+                {
+                    Console.WriteLine("Error Msg: " + e.Data);
+                    changeProgressBarValueBackgroundWorker.CancelAsync();
+                    CommandRunnerBackgroundWorker.CancelAsync();
+                }
+            }
+            
+        }
+
+        void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Process p = sender as Process;
+            if (p == null)
+                return;
+            if(e.Data != null) 
+            {
+                if (e.Data.Equals("Firmware check OK"))
+                {
+                    Console.WriteLine("Firmware OK:  " + e.Data);
+                    generalPurposeProgressBarVal += 40;
+                }
+                else if (e.Data.Equals("Chiperase completed successfully"))
+                {
+                    Console.WriteLine("Erase ok.:  " + e.Data);
+                    generalPurposeProgressBarVal = 100;
+                    totalStatusProgressBarVal = 50;
+                }
+                else if (e.Data.Equals("Programming and verification completed successfully.")) {
+                    generalPurposeProgressBarVal = 100;
+                    totalStatusProgressBarVal = 100;
+                }
+                else
+                {
+                    Console.WriteLine("Data received: " + e.Data);
+                    changeProgressBarValueBackgroundWorker.CancelAsync();
+                    generalPurposeProgressBarVal = 0;
+                }
+            }
+        }
+
     }
 }

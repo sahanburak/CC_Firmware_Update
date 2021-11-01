@@ -73,6 +73,7 @@ namespace CC_Firmware_Update
 
         public enum eHWUnit
         {
+            HW_UNIT_NONE = 0,
             HW_UNIT_NETX = 1,
             HW_UNIT_STM32 = 2,
             HW_UNIT_HOST_MCU = 3,

@@ -153,8 +153,8 @@ namespace CC_Firmware_Update
             firmwareUpdateStartCmd.Header.Command = (UInt16)RT_Commands.eCommands.APP_COMMS_CMD_FirmwareUpdateStart;
             firmwareUpdateStartCmd.Header.RequestID = 123;
             firmwareUpdateStartCmd.Header.MessgeLength = (UInt16)(Size - firmwareUpdateStartCmd.Header.Size);
-            firmwareUpdateStartCmd.MajorType = uHWUnit;// (byte)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
-            firmwareUpdateStartCmd.MinorType = minorCommandType;// (byte)RT_Commands.eFWType.DOWNLOAD_FW_WITH_RST;
+            firmwareUpdateStartCmd.MajorType = uHWUnit;
+            firmwareUpdateStartCmd.MinorType = minorCommandType;
             firmwareUpdateStartCmd.FW_SIZE = fwSize;
             firmwareUpdateStartCmd.BaseAddr = (UInt32)HAL_FIRMWARE_BASE;
 

@@ -132,9 +132,9 @@ namespace CC_Firmware_Update
             operationCmd.Header.Command = (UInt16)RT_Commands.eCommands.APP_COMMS_CMD_Operation;
             operationCmd.Header.RequestID = 123;
 
-            operationCmd.OperClass = operClass;//(UInt16)eOperationClass.OPC_FIRMWARE;
-            operationCmd.OperType = operType;// (UInt16)eOperationType.OPT_DOWNLOAD;
-            operationCmd.HWUnit = hwUnit;//(UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
+            operationCmd.OperClass = operClass;
+            operationCmd.OperType = operType;
+            operationCmd.HWUnit = hwUnit;
             
             operationCmd.Header.MessgeLength = (UInt32) (Size-operationCmd.Header.Size);
 
