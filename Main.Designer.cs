@@ -57,8 +57,12 @@ namespace CC_Firmware_Update
             this.opc_FirmwareRadioButton = new System.Windows.Forms.RadioButton();
             this.changeProgressBarValueBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.CommandRunnerBackgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.SelectedFileGridView = new System.Windows.Forms.DataGridView();
+            this.resetDevice = new System.Windows.Forms.Button();
             this.hwUnitSelectGroupBox.SuspendLayout();
             this.operClassSelectGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SelectedFileGridView)).BeginInit();
             this.SuspendLayout();
             // 
             // ipAddressTextBox
@@ -67,7 +71,7 @@ namespace CC_Firmware_Update
             this.ipAddressTextBox.Name = "ipAddressTextBox";
             this.ipAddressTextBox.Size = new System.Drawing.Size(191, 20);
             this.ipAddressTextBox.TabIndex = 1;
-            this.ipAddressTextBox.Text = "10.1.11.211";
+            this.ipAddressTextBox.Text = "10.1.11.212";
             // 
             // ipAddressTitleLabel
             // 
@@ -98,7 +102,7 @@ namespace CC_Firmware_Update
             // 
             // searchDevicesButton
             // 
-            this.searchDevicesButton.Location = new System.Drawing.Point(532, 261);
+            this.searchDevicesButton.Location = new System.Drawing.Point(1127, 226);
             this.searchDevicesButton.Name = "searchDevicesButton";
             this.searchDevicesButton.Size = new System.Drawing.Size(169, 23);
             this.searchDevicesButton.TabIndex = 6;
@@ -113,13 +117,13 @@ namespace CC_Firmware_Update
             this.generalPurposeProgressBar.MarqueeAnimationSpeed = 1;
             this.generalPurposeProgressBar.Maximum = 10;
             this.generalPurposeProgressBar.Name = "generalPurposeProgressBar";
-            this.generalPurposeProgressBar.Size = new System.Drawing.Size(690, 23);
+            this.generalPurposeProgressBar.Size = new System.Drawing.Size(1285, 23);
             this.generalPurposeProgressBar.Step = 1;
             this.generalPurposeProgressBar.TabIndex = 7;
             // 
             // getDeviceInfoButton
             // 
-            this.getDeviceInfoButton.Location = new System.Drawing.Point(532, 290);
+            this.getDeviceInfoButton.Location = new System.Drawing.Point(1127, 255);
             this.getDeviceInfoButton.Name = "getDeviceInfoButton";
             this.getDeviceInfoButton.Size = new System.Drawing.Size(169, 23);
             this.getDeviceInfoButton.TabIndex = 8;
@@ -129,7 +133,7 @@ namespace CC_Firmware_Update
             // 
             // startFirmwareUpdateButton
             // 
-            this.startFirmwareUpdateButton.Location = new System.Drawing.Point(532, 13);
+            this.startFirmwareUpdateButton.Location = new System.Drawing.Point(1127, 13);
             this.startFirmwareUpdateButton.Name = "startFirmwareUpdateButton";
             this.startFirmwareUpdateButton.Size = new System.Drawing.Size(169, 23);
             this.startFirmwareUpdateButton.TabIndex = 11;
@@ -162,7 +166,7 @@ namespace CC_Firmware_Update
             this.totalStatusProgressBar.MarqueeAnimationSpeed = 1;
             this.totalStatusProgressBar.Maximum = 10;
             this.totalStatusProgressBar.Name = "totalStatusProgressBar";
-            this.totalStatusProgressBar.Size = new System.Drawing.Size(690, 23);
+            this.totalStatusProgressBar.Size = new System.Drawing.Size(1285, 23);
             this.totalStatusProgressBar.Step = 1;
             this.totalStatusProgressBar.TabIndex = 12;
             // 
@@ -171,7 +175,7 @@ namespace CC_Firmware_Update
             this.hwUnitSelectGroupBox.Controls.Add(this.netxRadioButton);
             this.hwUnitSelectGroupBox.Controls.Add(this.auxMCURadioButton);
             this.hwUnitSelectGroupBox.Controls.Add(this.hostMCURadioButton);
-            this.hwUnitSelectGroupBox.Location = new System.Drawing.Point(370, 12);
+            this.hwUnitSelectGroupBox.Location = new System.Drawing.Point(965, 12);
             this.hwUnitSelectGroupBox.Name = "hwUnitSelectGroupBox";
             this.hwUnitSelectGroupBox.Size = new System.Drawing.Size(156, 92);
             this.hwUnitSelectGroupBox.TabIndex = 13;
@@ -223,7 +227,7 @@ namespace CC_Firmware_Update
             this.operClassSelectGroupBox.Controls.Add(this.opc_ConfigRadioButton);
             this.operClassSelectGroupBox.Controls.Add(this.opc_BootloaderRadioButton);
             this.operClassSelectGroupBox.Controls.Add(this.opc_FirmwareRadioButton);
-            this.operClassSelectGroupBox.Location = new System.Drawing.Point(370, 110);
+            this.operClassSelectGroupBox.Location = new System.Drawing.Point(965, 110);
             this.operClassSelectGroupBox.Name = "operClassSelectGroupBox";
             this.operClassSelectGroupBox.Size = new System.Drawing.Size(156, 203);
             this.operClassSelectGroupBox.TabIndex = 14;
@@ -332,12 +336,33 @@ namespace CC_Firmware_Update
             this.CommandRunnerBackgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.CommandRunnerBackgroundWorker_ProgressChanged);
             this.CommandRunnerBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.CommandRunnerBackgroundWorker_RunWorkerCompleted);
             // 
+            // SelectedFileGridView
+            // 
+            this.SelectedFileGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.SelectedFileGridView.Location = new System.Drawing.Point(11, 77);
+            this.SelectedFileGridView.Name = "SelectedFileGridView";
+            this.SelectedFileGridView.Size = new System.Drawing.Size(948, 236);
+            this.SelectedFileGridView.TabIndex = 16;
+            this.SelectedFileGridView.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.SelectedFileGridView_UserDeletingRow);
+            // 
+            // resetDevice
+            // 
+            this.resetDevice.Location = new System.Drawing.Point(1127, 284);
+            this.resetDevice.Name = "resetDevice";
+            this.resetDevice.Size = new System.Drawing.Size(169, 23);
+            this.resetDevice.TabIndex = 17;
+            this.resetDevice.Text = "Reset Device";
+            this.resetDevice.UseVisualStyleBackColor = true;
+            this.resetDevice.Click += new System.EventHandler(this.resetDevice_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
-            this.ClientSize = new System.Drawing.Size(713, 379);
+            this.ClientSize = new System.Drawing.Size(1300, 379);
+            this.Controls.Add(this.resetDevice);
+            this.Controls.Add(this.SelectedFileGridView);
             this.Controls.Add(this.operClassSelectGroupBox);
             this.Controls.Add(this.hwUnitSelectGroupBox);
             this.Controls.Add(this.totalStatusProgressBar);
@@ -351,7 +376,6 @@ namespace CC_Firmware_Update
             this.Controls.Add(this.ipAddressTextBox);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Compact Controller Slave Firmware Updater";
@@ -360,6 +384,7 @@ namespace CC_Firmware_Update
             this.hwUnitSelectGroupBox.PerformLayout();
             this.operClassSelectGroupBox.ResumeLayout(false);
             this.operClassSelectGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SelectedFileGridView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -393,6 +418,9 @@ namespace CC_Firmware_Update
         private System.Windows.Forms.RadioButton opc_ConfigBLRadioButton;
         private System.ComponentModel.BackgroundWorker changeProgressBarValueBackgroundWorker;
         private System.ComponentModel.BackgroundWorker CommandRunnerBackgroundWorker;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.DataGridView SelectedFileGridView;
+        private System.Windows.Forms.Button resetDevice;
     }
 }
 

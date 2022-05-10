@@ -113,15 +113,17 @@ namespace CC_Firmware_Update
             byte[] rData = Program.ReceiveData();
 
             RT_Response response = new RT_Response();
-            Boolean ret = response.ResponseParser(rData);
-            return ret;
+            RT_Response.eResponseErrorCode ret = response.ResponseParser(rData);
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS)
+                return true;
+            return false;
         }
 
 
-        public static Boolean ResponseParser(byte[] response)
+        public static RT_Response.eResponseErrorCode ResponseParser(byte[] response)
         {
             RT_RunModeChangeCommand runModeChangeResponse = new RT_RunModeChangeCommand();
-            Boolean ret = false;
+            RT_Response.eResponseErrorCode ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_ERR_FORMAT;
 
             runModeChangeResponse.PacketSize = BitConverter.ToUInt16(response, 0);
             runModeChangeResponse.HWUnit = BitConverter.ToUInt16(response, 2);
@@ -131,10 +133,10 @@ namespace CC_Firmware_Update
             if (runModeChangeResponse.HWUnit == (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU)
             {
                 if (runModeChangeResponse.RunMode == (UInt16)RT_Commands.eRunMode.RUNMODE_INIT) {
-                    return true;
+                    ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
                 }
             }
-            return false;
+            return ret;
         }
     }
 }

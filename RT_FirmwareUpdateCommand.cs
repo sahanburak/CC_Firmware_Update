@@ -182,28 +182,32 @@ namespace CC_Firmware_Update
             byte[] rData = Program.ReceiveData();
 
             RT_Response response = new RT_Response();
-            Boolean ret = response.ResponseParser(rData);
-            return ret;
+            RT_Response.eResponseErrorCode ret = response.ResponseParser(rData);
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS)
+                return true;
+            return false;
         }
 
 
-        public static Boolean ResponseParser(byte[] response)
+        public static RT_Response.eResponseErrorCode ResponseParser(byte[] response)
         {
             RT_Response rtResponse = new RT_Response();
-            Boolean ret = false;
+            RT_Response.eResponseErrorCode ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_ERR_FORMAT;
 
             rtResponse.Error = BitConverter.ToUInt32(response, 0);
             Console.WriteLine("Response Update Start Command: {0:}", rtResponse.Error);
 
             if (rtResponse.Error == 0) {
+                ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
                 isUpdateStartable = true;
             }
             else
             {
+                ret = (RT_Response.eResponseErrorCode) BitConverter.ToUInt32(response, 3);
                 isUpdateStartable = false;
             }
 
-            return isUpdateStartable;
+            return ret;
         }
     }
 
@@ -309,20 +313,29 @@ namespace CC_Firmware_Update
             byte[] rData = Program.ReceiveData();
 
             RT_Response response = new RT_Response();
-            Boolean ret = response.ResponseParser(rData);
-            return ret;
+            RT_Response.eResponseErrorCode ret = response.ResponseParser(rData);
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS)
+                return true;
+            return false;
         }
 
 
-        public static Boolean ResponseParser(byte[] response)
+        public static RT_Response.eResponseErrorCode ResponseParser(byte[] response)
         {
 
             RT_Response rtResponse = new RT_Response();
-            Boolean ret = false;
+            RT_Response.eResponseErrorCode ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
 
             rtResponse.Error = BitConverter.ToUInt32(response, 0);
+            if (rtResponse.Error == 0)
+            {
+                ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
+            }
+            else {
+                ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_ERR_FORMAT;
+            }
 
-            return true;
+            return ret;
         }
     }
 }

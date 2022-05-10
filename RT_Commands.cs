@@ -133,6 +133,19 @@ namespace CC_Firmware_Update
             return cmd;
         }
 
-        
+        public byte[] resetDeviceCommand(RT_Commands.eHWUnit hwUnit)
+        {
+            byte[] cmd = new byte[12];
+            RT_DeviceReset bodyCMD = new RT_DeviceReset();
+            RT_Command_Header headerCMD = new RT_Command_Header();
+            byte[] header = headerCMD.getHeaderArr((UInt16)eCommands.APP_COMMS_CMD_ResetDevice, 123, 4);
+            byte[] body = bodyCMD.getDeviceReset(hwUnit);
+            System.Buffer.BlockCopy(header, 0, cmd, 0, header.Length);
+            System.Buffer.BlockCopy(body, 0, cmd, header.Length, body.Length);
+            Console.WriteLine("Command Length: {0}", (header.Length + body.Length));
+            return cmd;
+        }
+
+
     }
 }

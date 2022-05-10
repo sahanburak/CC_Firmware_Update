@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeviceStatus.cs" />
+    <Compile Include="FileOperations.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -59,6 +60,7 @@
     <Compile Include="RotaDeviceInfo.cs" />
     <Compile Include="RT_Commands.cs" />
     <Compile Include="RT_Command_Header.cs" />
+    <Compile Include="RT_DeviceReset.cs" />
     <Compile Include="RT_DeviceInfoCommand.cs" />
     <Compile Include="RT_FirmwareUpdateCommand.cs" />
     <Compile Include="RT_OperationCommand.cs" />

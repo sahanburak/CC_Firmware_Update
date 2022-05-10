@@ -66,8 +66,8 @@ namespace CC_Firmware_Update
             byte[] rData = Program.ReceiveData();
 
             RT_Response response = new RT_Response();
-            Boolean ret = response.ResponseParser(rData);
-            if (ret)
+            RT_Response.eResponseErrorCode ret = response.ResponseParser(rData);
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS)
             {
                 if (!Encoding.Default.GetString(Program.rotaAdvanceDeviceInfo.TestDate).Replace("\0", string.Empty).Equals("")) /* Advance Info Received */
                 {
@@ -102,8 +102,8 @@ namespace CC_Firmware_Update
             if(rData == null)
                 return devStat;
             RT_Response response = new RT_Response();
-            Boolean ret = response.ResponseParser(rData);
-            if (ret)
+            RT_Response.eResponseErrorCode ret = response.ResponseParser(rData);
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS)
             {
 
 

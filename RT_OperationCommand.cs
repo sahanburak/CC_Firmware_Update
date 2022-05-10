@@ -163,12 +163,14 @@ namespace CC_Firmware_Update
             byte[] rData = Program.ReceiveData();
 
             RT_Response response = new RT_Response();
-            Boolean ret = response.ResponseParser(rData);
-            return ret;
+            RT_Response.eResponseErrorCode ret = response.ResponseParser(rData);
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS)
+                return true;
+            return false;
         }
 
 
-        public static Boolean ResponseParser(byte[] response)
+        public static RT_Response.eResponseErrorCode ResponseParser(byte[] response)
         {
             Console.Write("Operation Command Response: [");
             for (int i = 0; i < response.Length; i++)
@@ -177,7 +179,7 @@ namespace CC_Firmware_Update
             }
             Console.WriteLine(" ]");
             RT_OperationCommand operationResponse = new RT_OperationCommand();
-            Boolean ret = false;
+            RT_Response.eResponseErrorCode ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_ERR_FORMAT;
             operationResponse.PacketSize = BitConverter.ToUInt16(response, 0);
             operationResponse.OperClass = BitConverter.ToUInt16(response, 2);
             operationResponse.OperType = BitConverter.ToUInt16(response, 4);
@@ -186,10 +188,10 @@ namespace CC_Firmware_Update
             {
                 if (operationResponse.OperType == (UInt16) eOperationType.OPT_DOWNLOAD)
                 {
-                    return true;
+                    ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
                 }
             }
-            return false;
+            return ret;
         }
     }
 }

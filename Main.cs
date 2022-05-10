@@ -22,17 +22,19 @@ namespace CC_Firmware_Update
         byte[] firmwareFile;
         String fileName;
         String devIPAddress;
-        String devBootLoaderIPaddress = "10.1.11.209";
+        String devBootLoaderIPaddress = "10.1.11.210";
         static int CMD_PORT = 1235;
         static int UPDATE_PORT = 1237;
         static int startIP = 205;
         static int endIP = 215;
-        UInt16 uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
-        UInt16 uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE;
+        RT_Commands.eHWUnit uHwUnit = RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
+        RT_OperationCommand.eOperationClass uOperClass = RT_OperationCommand.eOperationClass.OPC_FIRMWARE;
         System.Diagnostics.Process p;
         int generalPurposeProgressBarVal = 0;
         int totalStatusProgressBarVal = 0;
         bool isProcessEnd = false;
+
+        DataTable fileListTable = new DataTable();
         public Main()
         {
             InitializeComponent();
@@ -64,7 +66,11 @@ namespace CC_Firmware_Update
 
         private void Main_Load(object sender, EventArgs e)
         {
-
+            fileListTable.Columns.Add("HW Type", typeof(string));
+            fileListTable.Columns.Add("File Type", typeof(string));
+            fileListTable.Columns.Add("Path", typeof(string));
+            SelectedFileGridView.DataSource = fileListTable;
+            SelectedFileGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
         }
 
         private void searchDevicesButton_Click(object sender, EventArgs e)
@@ -125,21 +131,21 @@ namespace CC_Firmware_Update
         private void startFirmwareUpdateButton_Click(object sender, EventArgs e)
         {
             switch (uHwUnit) {
-                case (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU:
+                case RT_Commands.eHWUnit.HW_UNIT_HOST_MCU:
                     switch (uOperClass)
                     {
-                        case (UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE:
+                        case RT_OperationCommand.eOperationClass.OPC_FIRMWARE:
                             HostMCU_FirmwareUpdate();
                             break;
-                        case (UInt16)RT_OperationCommand.eOperationClass.OPC_BOOTLOADER:                        
+                        case RT_OperationCommand.eOperationClass.OPC_BOOTLOADER:                        
                             HostMCU_BootloaderUpdate();
                             break;
                     }
                     break;
-                case (UInt16)RT_Commands.eHWUnit.HW_UNIT_STM32:
+                case RT_Commands.eHWUnit.HW_UNIT_STM32:
                     
                     break;
-                case (UInt16)RT_Commands.eHWUnit.HW_UNIT_NETX:
+                case RT_Commands.eHWUnit.HW_UNIT_NETX:
 
                     break;
                 default:
@@ -393,6 +399,7 @@ namespace CC_Firmware_Update
                 totalStatusProgressBar.Value = 100;
                 generalPurposeProgressBar.Value = generalPurposeProgressBar.Maximum;
                 startFirmwareUpdateButton.Enabled = true;
+                MessageBox.Show("Device updated.");
             }
             else if (e.Error != null)
             {
@@ -531,10 +538,10 @@ namespace CC_Firmware_Update
         private void hostMCURadioButton_CheckedChanged(object sender, EventArgs e)
         {
             if (hostMCURadioButton.Checked) {
-                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
+                uHwUnit = RT_Commands.eHWUnit.HW_UNIT_HOST_MCU;
             }
             else {
-                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NONE;
+                uHwUnit = RT_Commands.eHWUnit.HW_UNIT_NONE;
             }
         }
 
@@ -542,11 +549,11 @@ namespace CC_Firmware_Update
         {
             if (auxMCURadioButton.Checked)
             {
-                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_STM32;
+                uHwUnit = RT_Commands.eHWUnit.HW_UNIT_STM32;
             }
             else
             {
-                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NONE;
+                uHwUnit = RT_Commands.eHWUnit.HW_UNIT_NONE;
             }
         }
 
@@ -554,11 +561,11 @@ namespace CC_Firmware_Update
         {
             if (netxRadioButton.Checked)
             {
-                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NETX;
+                uHwUnit = RT_Commands.eHWUnit.HW_UNIT_NETX;
             }
             else
             {
-                uHwUnit = (UInt16)RT_Commands.eHWUnit.HW_UNIT_NONE;
+                uHwUnit = RT_Commands.eHWUnit.HW_UNIT_NONE;
             }
         }
 
@@ -566,7 +573,7 @@ namespace CC_Firmware_Update
         {
             if (opc_FirmwareRadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_FIRMWARE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_FIRMWARE;
             }
             else
             {
@@ -578,7 +585,7 @@ namespace CC_Firmware_Update
         {
             if (opc_BootloaderRadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_BOOTLOADER;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_BOOTLOADER;
             }
             else
             {
@@ -590,11 +597,11 @@ namespace CC_Firmware_Update
         {
             if (opc_ConfigRadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_CONFIG;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_CONFIG;
             }
             else
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_NONE;
             }
         }
 
@@ -602,11 +609,11 @@ namespace CC_Firmware_Update
         {
             if (opc_ConfigBLRadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_CONFIG_BL;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_CONFIG_BL;
             }
             else
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_NONE;
             }
         }
 
@@ -614,11 +621,11 @@ namespace CC_Firmware_Update
         {
             if (opc_CalibrationRadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_CALIBRATION;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_CALIBRATION;
             }
             else
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_NONE;
             }
         }
 
@@ -626,11 +633,11 @@ namespace CC_Firmware_Update
         {
             if (opc_Licence_RadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_LICENCE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_LICENCE;
             }
             else
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_NONE;
             }
         }
 
@@ -638,29 +645,45 @@ namespace CC_Firmware_Update
         {
             if (opc_ModuleRadioButton.Checked)
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_MODULE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_MODULE;
             }
             else
             {
-                uOperClass = (UInt16)RT_OperationCommand.eOperationClass.OPC_NONE;
+                uOperClass = RT_OperationCommand.eOperationClass.OPC_NONE;
             }
         }
 
         void HostMCU_FirmwareUpdate()
         {
             totalStatusProgressBar.Value = 0;
-            using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Non Crypted Firmware|*.bin| Crypted Firmware |*.enc.bin" })
+            
+            RTFile file = new RTFile(uHwUnit, uOperClass, fileName);
+            int index = FileOperations.searchFile(file);
+            if (index == 0)
             {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Non Crypted Firmware|*.bin| Crypted Firmware |*.enc.bin" })
                 {
-                    fileName = openFileDialog.FileName;
-                    startFirmwareUpdateButton.Enabled = false;
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        fileName = openFileDialog.FileName;
+                        startFirmwareUpdateButton.Enabled = false;
+                        file.FilePath = fileName;
+                        fileListTable.Rows.Add(file.HwType.ToString(), file.FileType.ToString(), file.FilePath);
+                        SelectedFileGridView.DataSource = fileListTable;
+                        FileOperations.fileList.Add(file);
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
-                else
-                {
-                    return;
-                }
+
             }
+            else
+            {
+                file = FileOperations.fileList[index - 1];
+            }
+            
             totalStatusProgressBar.Value += 5;
             devIPAddress = ipAddressTextBox.Text;
             if (!connectAction(devIPAddress, CMD_PORT))
@@ -680,7 +703,7 @@ namespace CC_Firmware_Update
                     if (stat.RunMode != (UInt16)RT_Commands.eRunMode.RUNMODE_INIT)
                     {
                         RT_RunModeChangeCommand runModeChangeCommand = new RT_RunModeChangeCommand();
-                        ret = runModeChangeCommand.changeDeviceRunMode(uHwUnit, (UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
+                        ret = runModeChangeCommand.changeDeviceRunMode((UInt16) uHwUnit, (UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
                         totalStatusProgressBar.Value = 5;
                     }
                     else
@@ -705,7 +728,7 @@ namespace CC_Firmware_Update
             if (ret)
             {
                 RT_OperationCommand operationCmd = new RT_OperationCommand();
-                ret = operationCmd.doOperationCommand(uOperClass, (UInt16)RT_OperationCommand.eOperationType.OPT_DOWNLOAD, uHwUnit);
+                ret = operationCmd.doOperationCommand((UInt16) uOperClass, (UInt16)RT_OperationCommand.eOperationType.OPT_DOWNLOAD,(UInt16) uHwUnit);
                 if (ret)
                 {
                     if (Program.isConnected)
@@ -740,20 +763,32 @@ namespace CC_Firmware_Update
             totalStatusProgressBar.Value = totalStatusProgressBarVal;
             generalPurposeProgressBarVal = 0;
             generalPurposeProgressBar.Value = generalPurposeProgressBarVal;
-            using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Firmware |*.elf" })
+            RTFile file = new RTFile(uHwUnit,  uOperClass, fileName);
+            int index = FileOperations.searchFile(file);
+            if (index == 0)
             {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                using (OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Firmware |*.elf" })
                 {
-                    fileName = openFileDialog.FileName;
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        fileName = openFileDialog.FileName;
+                        file.FilePath = fileName;
+                        fileListTable.Rows.Add(file.HwType.ToString(), file.FileType.ToString(), file.FilePath);
+                        SelectedFileGridView.DataSource = fileListTable;
+                        FileOperations.fileList.Add(file);
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
-                else
-                {
-                    return;
-                }
+
             }
-
-
-            string[] lines = File.ReadAllLines(fileName);
+            else {
+                file = FileOperations.fileList[index-1];
+            }
+            
+            string[] lines = File.ReadAllLines(file.FilePath);
             bool result = false;
             for (int i=0;i<lines.Length;i++) { 
                 result = lines[i].Contains("Bootloader starting...");
@@ -834,5 +869,45 @@ namespace CC_Firmware_Update
             }
         }
 
+        private void SelectedFileGridView_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+        {
+            if(SelectedFileGridView.Rows[e.Row.Index].Cells[0].Value.ToString() != "") { 
+                uHwUnit = (RT_Commands.eHWUnit)Enum.Parse(typeof(RT_Commands.eHWUnit), SelectedFileGridView.Rows[e.Row.Index].Cells[0].Value.ToString(), true);
+                uOperClass = (RT_OperationCommand.eOperationClass)Enum.Parse(typeof(RT_OperationCommand.eOperationClass), SelectedFileGridView.Rows[e.Row.Index].Cells[1].Value.ToString(), true);
+                fileName = SelectedFileGridView.Rows[e.Row.Index].Cells[2].Value.ToString();
+
+                RTFile file = new RTFile(uHwUnit, uOperClass, fileName);
+                int index = FileOperations.searchFile(file);
+                if (index == 0)
+                {
+                    return;
+
+                }
+                else
+                {
+                    FileOperations.fileList.RemoveAt(e.Row.Index);
+                    SelectedFileGridView.DataSource = fileListTable;
+                }
+            }
+        }
+
+        private void resetDevice_Click(object sender, EventArgs e)
+        {
+            devIPAddress = ipAddressTextBox.Text;
+            connectAction(devIPAddress, CMD_PORT);
+            RT_DeviceReset deviceReset = new RT_DeviceReset();
+            RT_Response.eResponseErrorCode ret = deviceReset.resetDevice(uHwUnit);
+
+            if (ret == RT_Response.eResponseErrorCode.APP_COMMS_CMD_RUNMODE_ERR) {
+                RT_RunModeChangeCommand runModeChangeCommand = new RT_RunModeChangeCommand();
+                Boolean status = runModeChangeCommand.changeDeviceRunMode((UInt16)RT_Commands.eHWUnit.HW_UNIT_HOST_MCU, (UInt16)RT_Commands.eRunMode.RUNMODE_INIT);
+                if (status)
+                {
+                    ret = deviceReset.resetDevice(uHwUnit);
+                }
+
+            }
+            disconnectAction();
+        }
     }
 }

@@ -52,10 +52,10 @@ namespace CC_Firmware_Update
             set { this.advanceDeviceInfo = value; }
         }
 
-        public static Boolean deviceInfoResponseParser(byte[] response)
+        public static RT_Response.eResponseErrorCode deviceInfoResponseParser(byte[] response)
         {
             RT_Response_DeviceInfo deviceInfoResponse = new RT_Response_DeviceInfo();
-            Boolean ret = false;
+            RT_Response.eResponseErrorCode ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
             deviceInfoResponse.PacketSize = BitConverter.ToUInt16(response, 0);
             deviceInfoResponse.InfoType = BitConverter.ToUInt16(response, 2);
 
@@ -68,7 +68,7 @@ namespace CC_Firmware_Update
                     deviceInfoResponse.DeviceInfo = deviceInfoTypeCasting(data);
                     Console.WriteLine("Software Level: {0:}", deviceInfoResponse.DeviceInfo.SwLevel);
                     Console.WriteLine("Runmode Level: {0:}", deviceInfoResponse.DeviceInfo.RunMode);
-                    ret = true;
+                    ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
                 }
                 else if (deviceInfoResponse.IsAdvanced == (UInt16)RT_Commands.eReadDeviceInfoType.DEVICE_INFO_ADVANCE)
                 {
@@ -76,14 +76,15 @@ namespace CC_Firmware_Update
                     deviceInfoResponse.AdvanceDeviceInfo = advanceDeviceInfoTypeCasting(data);
                     Console.WriteLine("Software Level: {0:}", deviceInfoResponse.AdvanceDeviceInfo.DeviceInfo.SwLevel);
                     Console.WriteLine("Runmode Level: {0:}", deviceInfoResponse.AdvanceDeviceInfo.DeviceInfo.RunMode);
-                    ret = true;
+                    ret = RT_Response.eResponseErrorCode.APP_COMMS_CMD_SUCCESS;
                 }
 
             }
             else if (deviceInfoResponse.InfoType == (UInt16)RT_Commands.eReadDeviceInfoResponseType.DEVICE_INFO_RESP_ERROR)
             {  /* Error received */
                 deviceInfoResponse.ulErrror = BitConverter.ToUInt32(response, 3);
-                ret = false;
+                int errorCode = BitConverter.ToUInt16(response, 4);
+                ret = (RT_Response.eResponseErrorCode)deviceInfoResponse.ulErrror;
             }
             return ret;
         }
